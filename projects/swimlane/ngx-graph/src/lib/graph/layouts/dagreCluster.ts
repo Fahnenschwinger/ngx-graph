@@ -27,28 +27,25 @@ export class DagreClusterLayout implements Layout {
   run(graph: Graph): Graph {
     this.createDagreGraph(graph);
     dagre.layout(this.dagreGraph);
-
     graph.edgeLabels = this.dagreGraph._edgeLabels;
-
-    const dagreToOutput = node => {
-      const dagreNode = this.dagreGraph._nodes[node.id];
-      return {
-        ...node,
-        position: {
-          x: dagreNode.x,
-          y: dagreNode.y
-        },
-        dimension: {
-          width: dagreNode.width,
-          height: dagreNode.height
-        }
+    
+    for (const dagreNodeId in this.dagreGraph._nodes) {
+      const dagreNode = this.dagreGraph._nodes[dagreNodeId];
+      const ngxElements = graph.nodes.concat(graph.clusters);
+      const node = ngxElements.find(o => o.id === dagreNode.id);
+    
+      node.position = {
+        x: dagreNode.x,
+        y: dagreNode.y
       };
-    };
-    graph.clusters = (graph.clusters || []).map(dagreToOutput);
-    graph.nodes = graph.nodes.map(dagreToOutput);
+      node.dimension = {
+        width: dagreNode.width,
+        height: dagreNode.height
+      };
+    }
 
     return graph;
-  }
+}
 
   updateEdge(graph: Graph, edge: Edge): Graph {
     const sourceNode = graph.nodes.find(n => n.id === edge.source);
